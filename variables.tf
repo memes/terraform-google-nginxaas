@@ -25,12 +25,15 @@ variable "attachments" {
       can(regex("^[a-z][a-z0-9-]{0,62}$", k)) &&
       can(regex("^(?:https://www.googleapis.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z]{2,}-[a-z]{2,}[0-9]/subnetworks/[a-z]([a-z0-9-]+[a-z0-9])?$", v.subnet)) &&
       (
-        (coalesce(v.service_attachment, "unspecified") == "unspecified" ? true : can(regex("^(?:https://www.googleapis.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z]{2,}-[a-z]{2,}[0-9]/serviceAttachments/[a-z][a-z0-9-]{0,62}[a-z0-9]$", v.service_attachment))) &&
+        (coalesce(v.service_attachment, "unspecified") == "unspecified" ? true :
+          can(regex("^(?:https://www.googleapis.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z]{2,}-[a-z]{2,}[0-9]/serviceAttachments/[a-z][a-z0-9-]{0,62}[a-z0-9]$", v.service_attachment)) ||
+          can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", v.service_attachment))
+        ) &&
         (v.port == null ? true : floor(v.port) == v.port && v.port > 0 && v.port < 65536) &&
         (v.service_account_id == null ? true : can(regex("^[1-9][0-9]+$", v.service_account_id)))
       )
     ])
-    error_message = "Each attachments key must be a valid name, and the value must contain a valid subnet self-link, and may contain a valid service attachment self-link and port."
+    error_message = "Each attachments key must be a valid name, and the value must contain a valid subnet self-link, and may contain a valid service attachment self-link (or project) and port."
   }
   default     = null
   description = <<-EOD

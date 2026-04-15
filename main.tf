@@ -33,8 +33,8 @@ locals {
     subnet = data.google_compute_subnetwork.subnets[k].id
     region = reverse(split("/", data.google_compute_subnetwork.subnets[k].region))[0]
     # network            = data.google_compute_subnetwork.subnets[k].network
-    service_attachment = coalesce(v.service_attachment, "unspecified") == "unspecified" ? null : v.service_attachment
-    producer_projects  = coalesce(v.service_attachment, "unspecified") == "unspecified" ? [] : [reverse(split("/", v.service_attachment))[4]]
+    service_attachment = coalesce(v.service_attachment, "unspecified") == "unspecified" ? null : (can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", v.service_attachment)) ? null : v.service_attachment)
+    producer_projects  = coalesce(v.service_attachment, "unspecified") == "unspecified" ? [] : [can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", v.service_attachment)) ? v.service_attachment : reverse(split("/", v.service_attachment))[4]]
     port               = v.port
     description        = v.description
   } }

@@ -28,6 +28,7 @@
 | [google_iam_workload_identity_pool_provider.nginxaas](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/iam_workload_identity_pool_provider) | resource |
 | [google_project_iam_member.logging](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
 | [google_project_iam_member.monitoring](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/project_iam_member) | resource |
+| [google_secret_manager_secret_iam_member.secret](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/secret_manager_secret_iam_member) | resource |
 | [google_compute_subnetwork.subnets](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/compute_subnetwork) | data source |
 | [google_iam_workload_identity_pool.pool](https://registry.terraform.io/providers/hashicorp/google/latest/docs/data-sources/iam_workload_identity_pool) | data source |
 
@@ -37,6 +38,7 @@
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_project_id"></a> [project\_id](#input\_project\_id) | The Google Cloud project where the resources will be created. | `string` | n/a | yes |
 | <a name="input_attachments"></a> [attachments](#input\_attachments) | A map of named attachments to be created and linked with F5 NGINXaaS for Google Cloud. The module is designed to<br/>support partial provisioning, where only some values are known during each pass. | <pre>map(object({<br/>    subnet             = string<br/>    description        = optional(string)<br/>    service_attachment = optional(string)<br/>    port               = optional(number, 443)<br/>    service_account_id = optional(string)<br/>  }))</pre> | `null` | no |
+| <a name="input_secrets"></a> [secrets](#input\_secrets) | A set of Secret Manager secret identities that will be granted read-only access to principals which are entitled<br/>through the NGINXaaS OIDC provider. | `set(string)` | `null` | no |
 | <a name="input_workload_identity"></a> [workload\_identity](#input\_workload\_identity) | An optional identifier of an *existing* Workload Identity pool to which a new provider for NGINXaaS will be created. | <pre>object({<br/>    pool_id      = string<br/>    name         = optional(string, "f5-nginxaas-for-google-cloud")<br/>    display_name = optional(string, "F5 NGINXaaS for Google Cloud")<br/>    description  = optional(string, "OIDC provider for F5 NGINXaaS for Google Cloud")<br/>  })</pre> | `null` | no |
 
 ## Outputs

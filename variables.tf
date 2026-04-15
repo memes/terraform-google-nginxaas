@@ -64,3 +64,17 @@ variable "workload_identity" {
     An optional identifier of an *existing* Workload Identity pool to which a new provider for NGINXaaS will be created.
     EOD
 }
+
+variable "secrets" {
+  type     = set(string)
+  nullable = true
+  validation {
+    condition     = var.secrets == null ? true : alltrue([for secret in var.secrets : can(regex("projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/secrets/[a-zA-Z0-9_-]{1,255}$", secret))])
+    error_message = "Each secrets entry must be a valid Secret Manager self-link or name."
+  }
+  default     = null
+  description = <<-EOD
+  A set of Secret Manager secret identities that will be granted read-only access to principals which are entitled
+  through the NGINXaaS OIDC provider.
+  EOD
+}

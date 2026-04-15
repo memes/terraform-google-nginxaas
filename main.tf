@@ -87,6 +87,14 @@ resource "google_project_iam_member" "monitoring" {
   role     = "roles/monitoring.metricWriter"
 }
 
+# Allow matching identities to access secrets.
+resource "google_secret_manager_secret_iam_member" "secret" {
+  for_each  = var.secrets == null || coalesce(try(var.workload_identity.pool_id, null), "unspecified") == "unspecified" ? [] : var.secrets
+  secret_id = each.value
+  member    = format("principalSet://iam.googleapis.com/%s/attribute.nginxaas/enabled", try(data.google_iam_workload_identity_pool.pool["enabled"].name, ""))
+  role      = "roles/secretmanager.secretAccessor"
+}
+
 # Create the network attachment to NGINXaaS.
 resource "google_compute_network_attachment" "nginxaas" {
   for_each              = local.attachments

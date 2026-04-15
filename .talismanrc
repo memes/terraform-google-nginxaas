@@ -17,4 +17,6 @@ fileignoreconfig:
   ignore_detectors:
   - filecontent
 - filename: variables.tf
-  checksum: 673d619c81de09d572ed556916acd07a0ac51015c2ba899d7cb53f55711dede4
+  checksum: 90260770bafa0189a89e06859021d6beb814ceb83d92eb6407ad8fe0d495ce7f
+- filename: main.tf
+  checksum: dd19911755cdeb6be81398828152459f0fd6288fd9d0c4c1a6e71757be7033b3

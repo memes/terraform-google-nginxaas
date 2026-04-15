@@ -1,24 +1,23 @@
 [project]
-# TODO(@memes) - update this placeholder
-name = "repo-template"
+name = "terraform-google-nginxaas"
 version = "0.0.1"
 description = "Test harness for Terraform/Tofu module"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 # spell-checker: disable
 dependencies = []
 
 [dependency-groups]
 dev = [
     "pre-commit>=4.5.1",
-    "ruff>=0.15.0",
-    "ty>=0.0.16",
+    "ruff>=0.15.10",
+    "ty>=0.0.30",
 ]
 
 [tool.ruff]
 line-length = 120
 indent-width = 4
-target-version = "py312"
+target-version = "py313"
 
 [tool.ruff.lint]
 ignore = []

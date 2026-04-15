@@ -1,6 +1,6 @@
 {
-    "name": "memes-repo-template",
-    "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
+    "name": "memes-terraform-google-nginxaas",
+    "image": "mcr.microsoft.com/devcontainers/python:3.13-trixie",
     "features": {
         "ghcr.io/memes/devcontainers-features/direnv:1": {},
         "ghcr.io/memes/devcontainers-features/google-cloud-cli:1": {},

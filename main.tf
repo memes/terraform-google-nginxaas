@@ -38,14 +38,12 @@ locals {
     port               = v.port
     description        = v.description
   } }
-  # Get the set of unique NGINXaaS service account identifiers.
-  service_account_ids = var.attachments == null ? [] : distinct(compact([for k, v in var.attachments : v.service_account_id]))
   # If there are no service account ids provided, use 'disabled' as the only identity as that is an illegal value that
   # should never match a legitimate service account id. Additionally, the attribute used to enable access will be set
   # to disabled.
-  workload_identity_provider_disabled = length(local.service_account_ids) == 0
-  workload_identity_attribute_value   = length(local.service_account_ids) == 0 ? "disabled" : "enabled"
-  workload_identity_subjects          = length(local.service_account_ids) == 0 ? ["disabled"] : local.service_account_ids
+  workload_identity_provider_disabled = try(length(var.service_accounts), 0) == 0
+  workload_identity_attribute_value   = try(length(var.service_accounts), 0) == 0 ? "disabled" : "enabled"
+  workload_identity_subjects          = try(length(var.service_accounts), 0) == 0 ? ["disabled"] : var.service_accounts
 }
 
 

@@ -16,7 +16,6 @@ variable "attachments" {
     description        = optional(string)
     service_attachment = optional(string)
     port               = optional(number, 443)
-    service_account_id = optional(string)
   }))
   nullable = true
   validation {
@@ -29,8 +28,7 @@ variable "attachments" {
           can(regex("^(?:https://www.googleapis.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z]{2,}-[a-z]{2,}[0-9]/serviceAttachments/[a-z][a-z0-9-]{0,62}[a-z0-9]$", v.service_attachment)) ||
           can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", v.service_attachment))
         ) &&
-        (v.port == null ? true : floor(v.port) == v.port && v.port > 0 && v.port < 65536) &&
-        (v.service_account_id == null ? true : can(regex("^[1-9][0-9]+$", v.service_account_id)))
+        (v.port == null ? true : floor(v.port) == v.port && v.port > 0 && v.port < 65536)
       )
     ])
     error_message = "Each attachments key must be a valid name, and the value must contain a valid subnet self-link, and may contain a valid service attachment self-link (or project) and port."
@@ -62,6 +60,7 @@ variable "workload_identity" {
   }
   description = <<-EOD
     An optional identifier of an *existing* Workload Identity pool to which a new provider for NGINXaaS will be created.
+    The optional name, display_name, and description values can be used to override the default values.
     EOD
 }
 
@@ -76,5 +75,20 @@ variable "secrets" {
   description = <<-EOD
   A set of Secret Manager secret identities that will be granted read-only access to principals which are entitled
   through the NGINXaaS OIDC provider.
+  EOD
+}
+
+variable "service_accounts" {
+  type     = set(string)
+  nullable = true
+  validation {
+    condition     = try(length(var.service_accounts), 0) == 0 ? true : alltrue([for service_account in var.service_accounts : can(regex("^[1-9][0-9]+$", service_account))])
+    error_message = "Each service_accounts entry must be a valid service attachment numeric id."
+  }
+  default     = null
+  description = <<-EOD
+  An optional set of service account identifiers, as provided by F5 NGINXaaS for Google Cloud. These accounts will be
+  permitted to authenticated through an OIDC provider and granted access to send logs and metrics to the host project.
+  The accounts will also be granted read-only access to Secret Manager secrets as set in `secrets` variable.
   EOD
 }

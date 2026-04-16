@@ -91,7 +91,7 @@ resource "google_project_iam_member" "monitoring" {
 resource "google_secret_manager_secret_iam_member" "secret" {
   for_each  = var.secrets == null || coalesce(try(var.workload_identity.pool_id, null), "unspecified") == "unspecified" ? [] : var.secrets
   secret_id = each.value
-  member    = format("principalSet://iam.googleapis.com/%s/attribute.nginxaas/enabled", try(data.google_iam_workload_identity_pool.pool["enabled"].name, ""))
+  member    = one(formatlist("principalSet://iam.googleapis.com/%s/attribute.nginxaas/enabled", [for pool in data.google_iam_workload_identity_pool.pool : pool.name]))
   role      = "roles/secretmanager.secretAccessor"
 }
 

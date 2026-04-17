@@ -12,9 +12,16 @@ output "workload_identity_pool_provider_id" {
   EOD
 }
 
-output "network_endpoint_groups" {
-  value       = { for neg in google_compute_region_network_endpoint_group.nginxaas : reverse(split("/", neg.region))[0] => neg.id... }
+output "network_endpoint_groups_by_region" {
+  value       = { for neg in google_compute_region_network_endpoint_group.nginxaas : reverse(split("/", neg.region))[0] => neg.self_link... }
   description = <<-EOD
-  A map of Compute Engine region names to NEG identifiers.
+  A map of Compute Engine region names to NEG self-links.
+  EOD
+}
+
+output "network_endpoint_groups_by_name" {
+  value       = { for k, v in google_compute_region_network_endpoint_group.nginxaas : k => v.self_link }
+  description = <<-EOD
+  A map of NEG names to self-links.
   EOD
 }

@@ -15,7 +15,7 @@ variable "attachments" {
     subnet             = string
     description        = optional(string)
     service_attachment = optional(string)
-    port               = optional(number, 443)
+    ports              = optional(set(number), [443])
   }))
   nullable = true
   validation {
@@ -28,7 +28,7 @@ variable "attachments" {
           can(regex("^(?:https://www.googleapis.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z]{2,}-[a-z]{2,}[0-9]/serviceAttachments/[a-z][a-z0-9-]{0,62}[a-z0-9]$", v.service_attachment)) ||
           can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", v.service_attachment))
         ) &&
-        (v.port == null ? true : floor(v.port) == v.port && v.port > 0 && v.port < 65536)
+        (v.ports == null ? true : alltrue([for port in v.ports : floor(port) == port && port > 0 && port < 65536]))
       )
     ])
     error_message = "Each attachments key must be a valid name, and the value must contain a valid subnet self-link, and may contain a valid service attachment self-link (or project) and port."

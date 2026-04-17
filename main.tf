@@ -30,14 +30,22 @@ module "region_detail" {
 locals {
   # Transform the attachments variable, handling optional values as needed.
   attachments = var.attachments == null ? {} : { for k, v in var.attachments : k => {
-    subnet = data.google_compute_subnetwork.subnets[k].id
-    region = reverse(split("/", data.google_compute_subnetwork.subnets[k].region))[0]
-    # network            = data.google_compute_subnetwork.subnets[k].network
-    service_attachment = coalesce(v.service_attachment, "unspecified") == "unspecified" ? null : (can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", v.service_attachment)) ? null : v.service_attachment)
-    producer_projects  = coalesce(v.service_attachment, "unspecified") == "unspecified" ? [] : [can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", v.service_attachment)) ? v.service_attachment : reverse(split("/", v.service_attachment))[4]]
-    port               = v.port
-    description        = v.description
-  } }
+    subnet            = data.google_compute_subnetwork.subnets[k].id
+    region            = reverse(split("/", data.google_compute_subnetwork.subnets[k].region))[0]
+    producer_projects = coalesce(v.service_attachment, "unspecified") == "unspecified" ? [] : [can(regex("^[a-z][a-z0-9-]{4,28}[a-z0-9]$", v.service_attachment)) ? v.service_attachment : reverse(split("/", v.service_attachment))[4]]
+    description       = v.description
+    }
+  }
+  # Each attachment can have multiple ports - expand out.
+  endpoint_groups = { for key in var.attachments == null ? [] : flatten([for k, v in var.attachments : formatlist("%s:%d", k, try(length(v.ports), 0) == 0 ? [443] : v.ports)]) : key => {
+    subnet             = data.google_compute_subnetwork.subnets[split(":", key)[0]].id
+    name               = replace(key, ":", "-")
+    region             = reverse(split("/", data.google_compute_subnetwork.subnets[split(":", key)[0]].region))[0]
+    service_attachment = var.attachments[split(":", key)[0]].service_attachment
+    port               = split(":", key)[1]
+    description        = var.attachments[split(":", key)[0]].description
+    } if can(regex("^(?:https://www.googleapis.com/compute/v1/)?projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/regions/[a-z]{2,}-[a-z]{2,}[0-9]/serviceAttachments/[a-z][a-z0-9-]{0,62}[a-z0-9]$", var.attachments[split(":", key)[0]].service_attachment))
+  }
   # If there are no service account ids provided, use 'disabled' as the only identity as that is an illegal value that
   # should never match a legitimate service account id. Additionally, the attribute used to enable access will be set
   # to disabled.
@@ -107,18 +115,17 @@ resource "google_compute_network_attachment" "nginxaas" {
   ]
 }
 
-# Provision a NEG for each network attachment.
+# Provision a Network Endpoint Group for each network attachment/port combination.
 resource "google_compute_region_network_endpoint_group" "nginxaas" {
-  for_each = { for k, v in local.attachments : k => v if v.service_attachment != null }
-  project  = var.project_id
-  name     = each.key
-  region   = each.value.region
-  # network               = each.value.network
+  for_each              = local.endpoint_groups
+  project               = var.project_id
+  name                  = each.value.name
+  region                = each.value.region
   subnetwork            = each.value.subnet
   network_endpoint_type = "PRIVATE_SERVICE_CONNECT"
   description           = each.value.description
   psc_target_service    = each.value.service_attachment
   psc_data {
-    producer_port = try(each.value.port, 443)
+    producer_port = each.value.port
   }
 }

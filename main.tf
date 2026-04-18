@@ -50,7 +50,7 @@ locals {
   # should never match a legitimate service account id. Additionally, the attribute used to enable access will be set
   # to disabled.
   workload_identity_provider_disabled = try(length(var.service_accounts), 0) == 0
-  workload_identity_attribute_value   = try(length(var.service_accounts), 0) == 0 ? "'disabled'" : "'enabled'"
+  workload_identity_attribute_value   = try(length(var.service_accounts), 0) == 0 ? "disabled" : "enabled"
   workload_identity_subjects          = try(length(var.service_accounts), 0) == 0 ? ["disabled"] : var.service_accounts
 }
 

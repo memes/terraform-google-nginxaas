@@ -19,4 +19,4 @@ fileignoreconfig:
 - filename: variables.tf
   checksum: 90260770bafa0189a89e06859021d6beb814ceb83d92eb6407ad8fe0d495ce7f
 - filename: main.tf
-  checksum: 768f62ae65cc8be8c56123eb008f07fb8a98ac9a84f105c115a88d2c44873e4a
+  checksum: 3652ad640db8fb2c6eed75d1e133736a5cfe9033dd744a2cbf045708a7d58b26

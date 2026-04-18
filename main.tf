@@ -28,6 +28,9 @@ module "region_detail" {
 }
 
 locals {
+  # Handle null values as empty sets
+  service_accounts = var.service_accounts == null ? [] : var.service_accounts
+  secrets          = var.secrets == null ? [] : var.secrets
   # Transform the attachments variable, handling optional values as needed.
   attachments = var.attachments == null ? {} : { for k, v in var.attachments : k => {
     subnet            = data.google_compute_subnetwork.subnets[k].id
@@ -49,9 +52,13 @@ locals {
   # If there are no service account ids provided, use 'disabled' as the only identity as that is an illegal value that
   # should never match a legitimate service account id. Additionally, the attribute used to enable access will be set
   # to disabled.
-  workload_identity_provider_disabled = try(length(var.service_accounts), 0) == 0
-  workload_identity_attribute_value   = try(length(var.service_accounts), 0) == 0 ? "disabled" : "enabled"
-  workload_identity_subjects          = try(length(var.service_accounts), 0) == 0 ? ["disabled"] : var.service_accounts
+  workload_identity_provider_disabled = length(local.service_accounts) == 0
+  workload_identity_subjects          = length(local.service_accounts) == 0 ? ["disabled"] : local.service_accounts
+  iam_members                         = { for pair in setproduct([for pool in data.google_iam_workload_identity_pool.pool : pool.name], local.service_accounts) : pair[1] => format("principalSet://iam.googleapis.com/%s/subject/%s", pair[0], pair[1]) }
+  iam_secrets = { for pair in setproduct(local.secrets, keys(local.iam_members)) : join("-", pair) => {
+    secret_id = pair[0]
+    member    = local.iam_members[pair[1]]
+  } }
 }
 
 
@@ -64,8 +71,7 @@ resource "google_iam_workload_identity_pool_provider" "nginxaas" {
   description                        = coalesce(var.workload_identity.description, "OIDC provider for F5 NGINXaaS for Google Cloud")
   disabled                           = local.workload_identity_provider_disabled
   attribute_mapping = {
-    "google.subject"     = "assertion.sub"
-    "attribute.nginxaas" = format("'%s'", local.workload_identity_attribute_value)
+    "google.subject" = "assertion.sub"
   }
   # Only allow integration with the specified NGINXaaS service account ids
   attribute_condition = format("assertion.sub in %s", jsonencode(local.workload_identity_subjects))
@@ -79,25 +85,25 @@ resource "google_iam_workload_identity_pool_provider" "nginxaas" {
 
 # Allow matching identities to send logs to this project.
 resource "google_project_iam_member" "logging" {
-  for_each = data.google_iam_workload_identity_pool.pool
+  for_each = local.iam_members
   project  = var.project_id
-  member   = format("principalSet://iam.googleapis.com/%s/attribute.nginxaas/enabled", each.value.name)
+  member   = each.value
   role     = "roles/logging.logWriter"
 }
 
 # Allow matching identities to send metrics to this project.
 resource "google_project_iam_member" "monitoring" {
-  for_each = data.google_iam_workload_identity_pool.pool
+  for_each = local.iam_members
   project  = var.project_id
-  member   = format("principalSet://iam.googleapis.com/%s/attribute.nginxaas/enabled", each.value.name)
+  member   = each.value
   role     = "roles/monitoring.metricWriter"
 }
 
 # Allow matching identities to access secrets.
 resource "google_secret_manager_secret_iam_member" "secret" {
-  for_each  = var.secrets == null || coalesce(try(var.workload_identity.pool_id, null), "unspecified") == "unspecified" ? [] : var.secrets
-  secret_id = each.value
-  member    = one(formatlist("principalSet://iam.googleapis.com/%s/attribute.nginxaas/enabled", [for pool in data.google_iam_workload_identity_pool.pool : pool.name]))
+  for_each  = local.iam_secrets
+  secret_id = each.value.secret_id
+  member    = each.value.member
   role      = "roles/secretmanager.secretAccessor"
 }
 

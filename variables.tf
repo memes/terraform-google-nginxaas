@@ -15,7 +15,7 @@ variable "attachments" {
     subnet             = string
     description        = optional(string)
     service_attachment = optional(string)
-    ports              = optional(set(number), [443])
+    ports              = optional(set(number))
   }))
   nullable = true
   validation {

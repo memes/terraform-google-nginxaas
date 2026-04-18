@@ -147,6 +147,62 @@ run "single_region_single_service_attachments_no_ports" {
     error_message = "Expected all network attachments to have an expected region"
   }
   assert {
+    condition     = length(google_compute_region_network_endpoint_group.nginxaas) == 0
+    error_message = "Expected the count of NEGs to be 0"
+  }
+}
+
+run "single_region_single_service_attachments_one_port" {
+  variables {
+    attachments = {
+      "mock-1" = {
+        subnet             = "projects/mock-project/regions/us-central1/subnetworks/mock-nginxaas"
+        service_attachment = "projects/mock-project/regions/us-central1/serviceAttachments/mock-nginxaas"
+        ports              = [443]
+      }
+    }
+  }
+  assert {
+    condition     = length(google_iam_workload_identity_pool_provider.nginxaas) == 0
+    error_message = "Expected the count of Workload Identity Pool Provider to be 0"
+  }
+  assert {
+    condition     = length(google_project_iam_member.logging) == 0
+    error_message = "Expected the count of logWriter role binding to be 0"
+  }
+  assert {
+    condition     = length(google_project_iam_member.monitoring) == 0
+    error_message = "Expected the count of metricWriter role binding to be 0"
+  }
+  assert {
+    condition     = length(google_secret_manager_secret_iam_member.secret) == 0
+    error_message = "Expected the count of secretAccessor role binding to be 0"
+  }
+  assert {
+    condition     = length(google_compute_network_attachment.nginxaas) == 1
+    error_message = "Expected the count of Network Attachments to be 1"
+  }
+  assert {
+    condition     = alltrue([for a in google_compute_network_attachment.nginxaas : a.project == "mock-project"])
+    error_message = "Expected all network attachments to have a project of mock-project"
+  }
+  assert {
+    condition     = alltrue([for a in google_compute_network_attachment.nginxaas : contains(["mock-1"], a.name)])
+    error_message = "Expected all network attachments to have an expected name"
+  }
+  assert {
+    condition     = length(distinct([for a in google_compute_network_attachment.nginxaas : a.name])) == length(google_compute_network_attachment.nginxaas)
+    error_message = "Expected all network attachments to have a unique name"
+  }
+  assert {
+    condition     = alltrue([for a in google_compute_network_attachment.nginxaas : a.description == null])
+    error_message = "Expected all network attachments to have a null description"
+  }
+  assert {
+    condition     = alltrue([for a in google_compute_network_attachment.nginxaas : contains(["us-central1"], a.region)])
+    error_message = "Expected all network attachments to have an expected region"
+  }
+  assert {
     condition     = length(google_compute_region_network_endpoint_group.nginxaas) == 1
     error_message = "Expected the count of NEGs to be 1"
   }

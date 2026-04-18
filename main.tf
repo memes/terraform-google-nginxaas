@@ -37,7 +37,7 @@ locals {
     }
   }
   # Each attachment can have multiple ports - expand out.
-  endpoint_groups = { for key in var.attachments == null ? [] : flatten([for k, v in var.attachments : formatlist("%s:%d", k, try(length(v.ports), 0) == 0 ? [443] : v.ports)]) : key => {
+  endpoint_groups = { for key in var.attachments == null ? [] : flatten([for k, v in var.attachments : formatlist("%s:%d", k, try(length(v.ports), 0) == 0 ? [] : v.ports)]) : key => {
     subnet             = data.google_compute_subnetwork.subnets[split(":", key)[0]].id
     name               = replace(key, ":", "-")
     region             = reverse(split("/", data.google_compute_subnetwork.subnets[split(":", key)[0]].region))[0]

@@ -54,7 +54,7 @@ locals {
   # to disabled.
   workload_identity_provider_disabled = length(local.service_accounts) == 0
   workload_identity_subjects          = length(local.service_accounts) == 0 ? ["disabled"] : local.service_accounts
-  iam_members                         = { for pair in setproduct([for pool in data.google_iam_workload_identity_pool.pool : pool.name], local.service_accounts) : pair[1] => format("principalSet://iam.googleapis.com/%s/subject/%s", pair[0], pair[1]) }
+  iam_members                         = { for pair in setproduct([for pool in data.google_iam_workload_identity_pool.pool : pool.name], local.service_accounts) : pair[1] => format("principal://iam.googleapis.com/%s/subject/%s", pair[0], pair[1]) }
   iam_secrets = { for pair in setproduct(local.secrets, keys(local.iam_members)) : join("-", pair) => {
     secret_id = pair[0]
     member    = local.iam_members[pair[1]]

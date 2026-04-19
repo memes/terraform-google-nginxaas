@@ -53,11 +53,11 @@ locals {
   # should never match a legitimate service account id. Additionally, the attribute used to enable access will be set
   # to disabled.
   workload_identity_provider_disabled = length(local.service_accounts) == 0
+  workload_identity_attribute_value   = length(local.service_accounts) == 0 ? "disabled" : "enabled"
   workload_identity_subjects          = length(local.service_accounts) == 0 ? ["disabled"] : local.service_accounts
-  iam_members                         = { for pair in setproduct([for pool in data.google_iam_workload_identity_pool.pool : pool.name], local.service_accounts) : pair[1] => format("principal://iam.googleapis.com/%s/subject/%s", pair[0], pair[1]) }
-  iam_secrets = { for pair in setproduct(local.secrets, keys(local.iam_members)) : join("-", pair) => {
+  iam_secrets = { for pair in setproduct(local.secrets, keys(data.google_iam_workload_identity_pool.pool)) : join("-", pair) => {
     secret_id = pair[0]
-    member    = local.iam_members[pair[1]]
+    pool_name = data.google_iam_workload_identity_pool.pool[pair[1]].name
   } }
 }
 
@@ -71,7 +71,8 @@ resource "google_iam_workload_identity_pool_provider" "nginxaas" {
   description                        = coalesce(var.workload_identity.description, "OIDC provider for F5 NGINXaaS for Google Cloud")
   disabled                           = local.workload_identity_provider_disabled
   attribute_mapping = {
-    "google.subject" = "assertion.sub"
+    "google.subject"     = "assertion.sub"
+    "attribute.nginxaas" = format("'%s'", local.workload_identity_attribute_value)
   }
   # Only allow integration with the specified NGINXaaS service account ids
   attribute_condition = format("assertion.sub in %s", jsonencode(local.workload_identity_subjects))
@@ -85,17 +86,17 @@ resource "google_iam_workload_identity_pool_provider" "nginxaas" {
 
 # Allow matching identities to send logs to this project.
 resource "google_project_iam_member" "logging" {
-  for_each = local.iam_members
+  for_each = data.google_iam_workload_identity_pool.pool
   project  = var.project_id
-  member   = each.value
+  member   = format("principalSet://iam.googleapis.com/%s/attribute.nginxaas/enabled", each.value.name)
   role     = "roles/logging.logWriter"
 }
 
 # Allow matching identities to send metrics to this project.
 resource "google_project_iam_member" "monitoring" {
-  for_each = local.iam_members
+  for_each = data.google_iam_workload_identity_pool.pool
   project  = var.project_id
-  member   = each.value
+  member   = format("principalSet://iam.googleapis.com/%s/attribute.nginxaas/enabled", each.value.name)
   role     = "roles/monitoring.metricWriter"
 }
 
@@ -103,7 +104,7 @@ resource "google_project_iam_member" "monitoring" {
 resource "google_secret_manager_secret_iam_member" "secret" {
   for_each  = local.iam_secrets
   secret_id = each.value.secret_id
-  member    = each.value.member
+  member    = format("principalSet://iam.googleapis.com/%s/attribute.nginxaas/enabled", each.value.pool_name)
   role      = "roles/secretmanager.secretAccessor"
 }
 

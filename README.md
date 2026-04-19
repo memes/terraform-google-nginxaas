@@ -49,6 +49,6 @@
 | <a name="output_network_attachments"></a> [network\_attachments](#output\_network\_attachments) | A map of Compute Engine region names to network attachment identifiers. |
 | <a name="output_network_endpoint_groups_by_name"></a> [network\_endpoint\_groups\_by\_name](#output\_network\_endpoint\_groups\_by\_name) | A map of NEG names to self-links. |
 | <a name="output_network_endpoint_groups_by_region"></a> [network\_endpoint\_groups\_by\_region](#output\_network\_endpoint\_groups\_by\_region) | A map of Compute Engine region names to NEG self-links. |
-| <a name="output_workload_identity_pool_provider_id"></a> [workload\_identity\_pool\_provider\_id](#output\_workload\_identity\_pool\_provider\_id) | The identifier of the Workload Identity pool provider to use with F5 NGINXaas for Google Cloud, if created. |
+| <a name="output_workload_identity_pool_provider_name"></a> [workload\_identity\_pool\_provider\_name](#output\_workload\_identity\_pool\_provider\_name) | The identifier of the Workload Identity pool provider to use with F5 NGINXaas for Google Cloud, if created. |
 <!-- END_TF_DOCS -->
 <!-- markdownlint-enable MD033 MD034 MD060 -->

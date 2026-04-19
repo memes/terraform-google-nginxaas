@@ -5,8 +5,8 @@ output "network_attachments" {
   EOD
 }
 
-output "workload_identity_pool_provider_id" {
-  value       = one([for pool in google_iam_workload_identity_pool_provider.nginxaas : pool.id])
+output "workload_identity_pool_provider_name" {
+  value       = one([for pool in google_iam_workload_identity_pool_provider.nginxaas : pool.name])
   description = <<-EOD
   The identifier of the Workload Identity pool provider to use with F5 NGINXaas for Google Cloud, if created.
   EOD

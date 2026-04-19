@@ -3,6 +3,7 @@
     "version": "0.2",
     "language": "en",
     "words": [
+        "alltrue",
         "direnv",
         "DOCKERHUB",
         "envrc",
@@ -20,6 +21,8 @@
         "nginxaas",
         "opencontainers",
         "pastebin",
+        "secretmanager",
+        "subnetworks",
         "thumbsup",
         "trimpath",
         "venv",

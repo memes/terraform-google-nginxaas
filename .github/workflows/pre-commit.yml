@@ -37,7 +37,7 @@ jobs:
           cache: true
       - name: Install tofu
         uses: opentofu/setup-opentofu@v2
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version-file: ".python-version"
       - uses: astral-sh/setup-uv@v7

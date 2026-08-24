@@ -20,3 +20,7 @@ fileignoreconfig:
   checksum: 90260770bafa0189a89e06859021d6beb814ceb83d92eb6407ad8fe0d495ce7f
 - filename: main.tf
   checksum: 297a500c3b781cc6fdea7f7b033be24e9b8cb8e44b22969fa5517e308d7dbed3
+- filename: .devcontainer/devcontainer-lock.json
+  checksum: 3f5c1d0cc98a070c8474b9ecf0387e4c3e8e407064de9ee81c6136d0f6588647
+  ignore_detectors:
+  - filecontent

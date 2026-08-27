@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/memes/terraform-google-nginxaas/compare/v0.1.0...v0.1.1) (2026-08-27)
+
+
+### Bug Fixes
+
+* Add random suffix to provider name ([29a3318](https://github.com/memes/terraform-google-nginxaas/commit/29a331834e89e7b593e634e369d36d3a3c07c600)), closes [#46](https://github.com/memes/terraform-google-nginxaas/issues/46)
+
 ## [0.1.0](https://github.com/memes/terraform-google-nginxaas/compare/v0.0.1...v0.1.0) (2026-04-19)
 
 

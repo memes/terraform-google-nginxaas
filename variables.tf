@@ -52,16 +52,16 @@ variable "workload_identity" {
   validation {
     condition = var.workload_identity == null ? true : (
       can(regex("^projects/[a-z][a-z0-9-]{4,28}[a-z0-9]/locations/global/workloadIdentityPools/[a-z0-9-]{4,32}$", var.workload_identity.pool_id)) &&
-      coalesce(var.workload_identity.name, "unspecified") == "unspecified" ? true : can(regex("^[a-z0-9-]{4,32}$", var.workload_identity.name)) &&
+      coalesce(var.workload_identity.name, "unspecified") == "unspecified" ? true : can(regex("^[a-z0-9-]{4,28}$", var.workload_identity.name)) &&
       try(length(var.workload_identity.display_name), 0) <= 32 &&
       try(length(var.workload_identity.description), 0) <= 256
     )
     error_message = "The workload_identity_pool_id must be empty or a valid Workload Identity name or id."
   }
   description = <<-EOD
-    An optional identifier of an *existing* Workload Identity pool to which a new provider for NGINXaaS will be created.
-    The optional name, display_name, and description values can be used to override the default values.
-    EOD
+  An optional identifier of an *existing* Workload Identity pool to which a new provider for NGINXaaS will be created.
+  The optional name, display_name, and description values can be used to override the default values.
+  EOD
 }
 
 variable "secrets" {

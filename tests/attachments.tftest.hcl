@@ -342,4 +342,20 @@ run "single_region_single_service_attachments_three_ports" {
     condition     = length(distinct([for n in google_compute_region_network_endpoint_group.nginxaas : n.psc_data[0].producer_port])) == length(google_compute_region_network_endpoint_group.nginxaas)
     error_message = "Expected all NEGs to have a unique producer port"
   }
+  assert {
+    condition     = try(length(output.network_attachments), 0) == 1
+    error_message = "Expected network_attachments output to have one entry."
+  }
+  assert {
+    condition     = output.workload_identity_pool_provider_name == null
+    error_message = "Expected workload_identity_pool_provider_name output to be null."
+  }
+  assert {
+    condition     = try(length(output.network_endpoint_groups_by_region), 0) == 1
+    error_message = "Expected network_endpoint_groups_by_region output to have one entry."
+  }
+  assert {
+    condition     = try(length(output.network_endpoint_groups_by_name), 0) == 3
+    error_message = "Expected network_endpoint_groups_by_name output to have three entries."
+  }
 }

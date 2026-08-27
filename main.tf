@@ -5,6 +5,10 @@ terraform {
       source  = "hashicorp/google"
       version = ">= 7.1"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = ">= 3.9"
+    }
   }
 }
 
@@ -19,6 +23,11 @@ data "google_iam_workload_identity_pool" "pool" {
 data "google_compute_subnetwork" "subnets" {
   for_each  = var.attachments == null ? {} : var.attachments
   self_link = each.value.subnet
+}
+
+resource "random_id" "name" {
+  byte_length = 2
+  prefix      = coalesce(try(var.workload_identity.name, null), "f5-nginxaas-for-google-cloud")
 }
 
 module "region_detail" {
@@ -65,7 +74,7 @@ locals {
 resource "google_iam_workload_identity_pool_provider" "nginxaas" {
   for_each                           = data.google_iam_workload_identity_pool.pool
   project                            = each.value.project
-  workload_identity_pool_provider_id = coalesce(var.workload_identity.name, "f5-nginxaas-for-google-cloud")
+  workload_identity_pool_provider_id = random_id.name.hex
   workload_identity_pool_id          = reverse(split("/", each.value.id))[0]
   display_name                       = coalesce(var.workload_identity.display_name, "F5 NGINXaaS for Google Cloud")
   description                        = coalesce(var.workload_identity.description, "OIDC provider for F5 NGINXaaS for Google Cloud")

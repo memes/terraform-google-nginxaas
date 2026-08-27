@@ -1,19 +1,17 @@
 {
     "name": "memes-terraform-google-nginxaas",
-    "image": "mcr.microsoft.com/devcontainers/python:3.13-trixie",
+    "dockerFile": "Dockerfile",
     "features": {
-        "ghcr.io/memes/devcontainers-features/direnv:1": {},
+        "ghcr.io/devcontainers-extra/features/direnv:1": {},
+        "ghcr.io/devcontainers-extra/features/opentofu:1": {},
+        "ghcr.io/devcontainers-extra/features/terraform-docs:1": {},
         "ghcr.io/memes/devcontainers-features/google-cloud-cli:1": {},
-        "ghcr.io/memes/devcontainers-features/opentofu:1": {},
-        "ghcr.io/memes/devcontainers-features/starship:1": {},
         "ghcr.io/memes/devcontainers-features/talisman:1": {},
-        "ghcr.io/memes/devcontainers-features/terraform-docs:1": {},
         "ghcr.io/memes/devcontainers-features/tflint:1": {}
     },
     "customizations": {
         "vscode": {
             "extensions": [
-                "Gruntfuggly.todo-tree",
                 "ms-python.python",
                 "ms-python.debugpy",
                 "ms-python.vscode-python-envs",
@@ -31,6 +29,7 @@
     },
     "containerUser": "vscode",
     "containerEnv": {
+        "CLOUDSDK_CORE_CUSTOM_CA_CERTS_FILE": "/etc/ssl/certs/ca-certificates.crt",
         "UV_LINK_MODE": "copy"
     },
     "updateRemoteUserUID": true,
@@ -42,7 +41,7 @@
         "install-uv": ["/usr/local/py-utils/bin/pipx", "install", "uv"],
         "modify-default-omz-plugins": ["/usr/bin/sed", "-i.onCreateCommand" , "-e", "/^plugins=/c\\plugins=(git dotenv)", "/home/vscode/.zshrc"]
     },
-    "postCreateCommand": {
+    "updateContentCommand": {
         "uv-sync": "uv sync --link-mode=copy --all-extras --all-packages && uv run pre-commit install --hook-type commit-msg --hook-type pre-commit"
     }
 }
